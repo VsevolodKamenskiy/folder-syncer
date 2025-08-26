@@ -153,10 +153,8 @@ func (s *Syncer) syncDirectories() {
 	for path := range toDelete {
 		if err := os.RemoveAll(path); err != nil {
 			s.logger.Errorf("Error deleting %s: %v", path, err)
-			return
 		} else {
 			s.logger.Infof("Deleted %s", path)
-			return
 		}
 	}
 

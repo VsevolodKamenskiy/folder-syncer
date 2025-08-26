@@ -1,7 +1,6 @@
 package syncer
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -23,7 +22,7 @@ func setupTestDirectories(srcDir, dstDir string) error {
 	// Создаем тестовые файлы в исходной директории
 	for i := 0; i < 10; i++ {
 		content := make([]byte, 1024*1024) // 1 МБ
-		if err := ioutil.WriteFile(filepath.Join(srcDir, "file"+strconv.Itoa(i)+".txt"), content, 0644); err != nil {
+		if err := os.WriteFile(filepath.Join(srcDir, "file"+strconv.Itoa(i)+".txt"), content, 0644); err != nil {
 			return err
 		}
 	}
@@ -62,7 +61,7 @@ func BenchmarkSyncFile(b *testing.B) {
 	// Подготовка тестовых файлов
 	content := make([]byte, 10*1024*1024) // 10 МБ
 
-	if err := ioutil.WriteFile(srcFile, content, 0644); err != nil {
+	if err := os.WriteFile(srcFile, content, 0644); err != nil {
 		b.Fatalf("Failed to create source file: %v", err)
 	}
 	defer os.Remove(srcFile)

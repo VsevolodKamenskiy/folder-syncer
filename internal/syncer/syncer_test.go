@@ -2,7 +2,6 @@ package syncer
 
 import (
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -29,7 +28,7 @@ func TestCalculateSHA256(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			// Создаем временный файл
-			tmpFile, err := ioutil.TempFile("", "testfile-*.txt")
+			tmpFile, err := os.CreateTemp("", "testfile-*.txt")
 			assert.NoError(t, err)          // Проверяем, что не произошло ошибки
 			defer os.Remove(tmpFile.Name()) // Удаляем файл после теста
 
@@ -55,12 +54,12 @@ func TestCalculateSHA256(t *testing.T) {
 }
 
 func createTempDir(t *testing.T) (string, string) {
-	srcDir, err := ioutil.TempDir("", "src")
+	srcDir, err := os.MkdirTemp("", "src")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	dstDir, err := ioutil.TempDir("", "dst")
+	dstDir, err := os.MkdirTemp("", "dst")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -116,10 +115,10 @@ func TestSyncFile(t *testing.T) {
 			defer os.Remove("log.txt")
 
 			// Создаем исходный файл
-			ioutil.WriteFile(filepath.Join(srcDir, "file.txt"), []byte(tt.srcContent), os.ModePerm)
+			os.WriteFile(filepath.Join(srcDir, "file.txt"), []byte(tt.srcContent), os.ModePerm)
 
 			// Создаем целевой файл
-			ioutil.WriteFile(filepath.Join(dstDir, "file.txt"), []byte(tt.dstContent), os.ModePerm)
+			os.WriteFile(filepath.Join(dstDir, "file.txt"), []byte(tt.dstContent), os.ModePerm)
 
 			syncer := NewSyncer(srcDir, dstDir)
 
@@ -128,7 +127,7 @@ func TestSyncFile(t *testing.T) {
 			assert.NoError(t, err)
 
 			// Проверяем, что содержимое целевого файла соответствует ожидаемому
-			content, err := ioutil.ReadFile(filepath.Join(dstDir, "file.txt"))
+			content, err := os.ReadFile(filepath.Join(dstDir, "file.txt"))
 			assert.NoError(t, err)
 			assert.Equal(t, tt.expectContent, string(content))
 		})
@@ -172,12 +171,12 @@ func TestSyncDirectories(t *testing.T) {
 
 			// Создаем файлы в исходной директории
 			for _, file := range tt.srcFiles {
-				ioutil.WriteFile(filepath.Join(srcDir, file), []byte("content"), os.ModePerm)
+				os.WriteFile(filepath.Join(srcDir, file), []byte("content"), os.ModePerm)
 			}
 
 			// Создаем файлы в целевой директории
 			for _, file := range tt.dstFiles {
-				ioutil.WriteFile(filepath.Join(dstDir, file), []byte("content"), os.ModePerm)
+				os.WriteFile(filepath.Join(dstDir, file), []byte("content"), os.ModePerm)
 			}
 
 			syncer := NewSyncer(srcDir, dstDir)
@@ -192,7 +191,7 @@ func TestSyncDirectories(t *testing.T) {
 			}
 
 			// Проверяем, что в целевой директории нет лишних файлов
-			files, err := ioutil.ReadDir(dstDir)
+			files, err := os.ReadDir(dstDir)
 			assert.NoError(t, err)
 			assert.Len(t, files, len(tt.expectFiles))
 		})
